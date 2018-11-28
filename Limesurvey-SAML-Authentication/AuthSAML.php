@@ -72,6 +72,11 @@ class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
             'label' => 'Storage base',
             'default' => 'DbStorage',
         ),
+        'logout_redirect' => array(
+            'type' => 'string',
+            'label' => 'Logout Redirect URL',
+            'default' => '/admin',
+        ),
     );
 
     public function init() {
@@ -125,8 +130,10 @@ class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
     public function afterLogout()
     {
         $ssp = $this->get_saml_instance();
+        $redirect = $this->get('logout_redirect', null, null, '/admin');
         if ($ssp->isAuthenticated()) {
-            $ssp->logout();
+            Yii::app()->controller->redirect($ssp->getLogoutUrl($redirect));
+            Yii::app()->end();
         }
     }
 
