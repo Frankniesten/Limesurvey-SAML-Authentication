@@ -11,6 +11,7 @@ LimeSurvey authentication plugin for authenticating users against an SAML Identi
 - Paste it inside **limesurvey/plugins/AuthSAML** folder
 - Configure the plugin from the **Plugin Manager**
 - Go to **Admin > Configuration > Plugin Manager** or **https:/example.com/index.php/admin/pluginmanager/sa/index** and **Enable** the plugin 
+- Place your own custom **saml_logo.gif** image at **imesurvey/assets/images**. It will be displayed as the login button
 
 ## Configuration options
 - **Path to the SimpleSAMLphp folder**: path to the simpleSAMLphp installation
@@ -26,6 +27,15 @@ set this to **true** so the code can handle session conficts between simpleSAMLp
 - **Authtype base**: LimeSurvey internal configuration options, use it only if you know what you are doing. Configures where the users data are stored.
 - **Storage base**: LimeSurvey internal configuration options, use it only if you know what you are doing. Configures where the plugin settings are stored.
 - **Logout Redirect URL**: configures where should the user be redirected after the logout path
+
+## Images
+Login Page
+
+![Login Page with SAML button](images/login_page.png)
+
+Plugin settings at plugin manager
+![Plugin settings at plugin manager](images/saml_settings.png)
+
 
 
 ## External material
