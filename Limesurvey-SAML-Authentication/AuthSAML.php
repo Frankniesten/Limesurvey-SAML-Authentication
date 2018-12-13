@@ -4,20 +4,20 @@
  * LimeSurvey Auhtnetication Plugin for Limesurvey 3.14+
  * Auhtor: Frank Niesten
  * License: GNU General Public License v3.0
- * URL: https://github.com/Frankniesten/Limesurvey-SAML-Authentication
- * 
+ *
  * This plugin is based on the following LimeSurvey Plugins:
  * URL: https://github.com/LimeSurvey/LimeSurvey/blob/master/application/core/plugins/Authwebserver/Authwebserver.php
  * URL: https://github.com/LimeSurvey/LimeSurvey/blob/master/application/core/plugins/AuthLDAP/AuthLDAP.php
  * URL: https://github.com/pitbulk/limesurvey-saml
- *
+ * URL: https://github.com/Frankniesten/Limesurvey-SAML-Authentication
  */
-class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
-{
-	protected $storage = 'DbStorage';
-	protected $ssp = null;
 
-	static protected $description = 'Core: SAML authentication';
+class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
+{ 
+    protected $storage = 'DbStorage';
+    protected $ssp = null;
+
+    static protected $description = 'Core: SAML authentication';
     static protected $name = 'SAML';
 
     protected $settings = array(
@@ -38,17 +38,17 @@ class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
         ),
         'saml_uid_mapping' => array(
             'type' => 'string',
-            'label' => 'SAML attributed used as username',
+            'label' => 'SAML attribute used as username',
             'default' => 'uid',
         ),
         'saml_mail_mapping' => array(
             'type' => 'string',
-            'label' => 'SAML attributed used as email',
+            'label' => 'SAML attribute used as email',
             'default' => 'mail',
         ),
         'saml_name_mapping' => array(
             'type' => 'string',
-            'label' => 'SAML attributed used as name',
+            'label' => 'SAML attribute used as name',
             'default' => 'cn',
         ),
         'auto_update_users' => array(
@@ -214,7 +214,7 @@ class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
      * Initialize SAML authentication
      * @return void
      */
-    protected function get_saml_instance() {
+    public function get_saml_instance() {
 
         if ($this->ssp == null) {
 
