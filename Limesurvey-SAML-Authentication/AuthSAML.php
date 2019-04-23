@@ -13,7 +13,7 @@
  */
 
 class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
-{ 
+{
     protected $storage = 'DbStorage';
     protected $ssp = null;
 
@@ -51,12 +51,16 @@ class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
             'label' => 'SAML attribute used as name',
             'default' => 'cn',
         ),
+        'auto_create_users' => array(
+            'type' => 'checkbox',
+            'label' => 'Auto create users',
+            'default' => true,
+        ),
         'auto_update_users' => array(
             'type' => 'checkbox',
             'label' => 'Auto update users',
             'default' => true,
         ),
-
         'force_saml_login' => array(
             'type' => 'checkbox',
             'label' => 'Force SAML login.',
@@ -115,7 +119,7 @@ class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
     }
 
     public function beforeLogin() {
-	    $ssp = $this->get_saml_instance();
+        $ssp = $this->get_saml_instance();
 
         if ($this->get('force_saml_login', null, null, false)) {
             $ssp->requireAuth();
@@ -145,7 +149,7 @@ class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
         $this->getEvent()->getContent($authtype_base)->addContent('<li><center>Click on that button to initiate SAML Login<br><a href="'.$ssp->getLoginURL().'" title="SAML Login"><img src="'.Yii::app()->getConfig('imageurl').'/saml_logo.gif"></a></center><br></li>', 'prepend');
     }
 
-	public function newUserSession() {
+    public function newUserSession() {
 
         $ssp = $this->get_saml_instance();
 
@@ -157,37 +161,36 @@ class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
 
             $oUser = $this->api->getUserByName($sUser);
 
-            if (is_null($oUser)) {
+            $auto_create_users = $this->get('auto_create_users', null, null, true);
+
+            if (is_null($oUser) and $auto_create_users) {
 
                 // Create new user
-				$oUser = new User;
-	            $oUser->users_name = $sUser;
-	            $oUser->setPassword(createPassword());
-	            $oUser->full_name = $name;
-	            $oUser->parent_id = 1;
+                $oUser = new User;
+                $oUser->users_name = $sUser;
+                $oUser->setPassword(createPassword());
+                $oUser->full_name = $name;
+                $oUser->parent_id = 1;
                 $oUser->email = $mail;
 
                 if ($oUser->save()) {
-	                $permission = new Permission;
+                    $permission = new Permission;
 
-	                Permission::model()->setGlobalPermission($oUser->uid, 'auth_saml');
-	                Permission::model()->setGlobalPermission($oUser->uid, 'surveys', array('create_p'));
+                    Permission::model()->setGlobalPermission($oUser->uid, 'auth_saml');
 
-	                $oUser = $this->api->getUserByName($sUser);
+                    $oUser = $this->api->getUserByName($sUser);
 
                     $this->pluginManager->dispatchEvent(new PluginEvent('newUserLogin', $this));
 
                     $this->setAuthSuccess($oUser);
-        		}
+                } else {
+                    $this->setAuthFailure(self::ERROR_USERNAME_INVALID);
+                }
+            } elseif (is_null($oUser)) {
+                throw new CHttpException(401, gT("We are sorry but you do not have an account."));
+            } else {
 
-            	else {
-                	$this->setAuthFailure(self::ERROR_USERNAME_INVALID);
-            	}
-            }
-
-            else {
-
-		        // *** Update user ***
+                // *** Update user ***
                 $auto_update_users = $this->get('auto_update_users', null, null, true);
 
                 if ($auto_update_users) {
@@ -201,7 +204,7 @@ class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
                 }
 
                 $this->setAuthSuccess($oUser);
-	        }
+            }
         }
         $flag = $this->get('simplesamlphp_cookie_session_storage', null, null, true);
         if ($flag){
@@ -225,7 +228,7 @@ class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
             $saml_authsource = $this->get('saml_authsource', null, null, 'limesurvey');
 
             $this->ssp = new \SimpleSAML\Auth\Simple($saml_authsource);
-	    }
+        }
 
         return $this->ssp;
     }
