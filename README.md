@@ -10,7 +10,7 @@ LimeSurvey authentication plugin for authenticating users against an SAML Identi
 - Copy **AuthSAML.php** from repo folder **Limesurvey-SAML-Authentication**
 - Paste it inside **limesurvey/plugins/AuthSAML** folder
 - Configure the plugin from the **Plugin Manager**
-- Go to **Admin > Configuration > Plugin Manager** or **https:/example.com/index.php/admin/pluginmanager/sa/index** and **Enable** the plugin 
+- Go to **Admin > Configuration > Plugin Manager** or **https:/example.com/index.php/admin/pluginmanager/sa/index** and **Enable** the plugin
 - Place your own custom **saml_logo.gif** image at **imesurvey/assets/images**. It will be displayed as the login button
 
 ## Configuration options
@@ -22,6 +22,7 @@ set this to **true** so the code can handle session conficts between simpleSAMLp
 **WARNING!!!** Please do not allow users to aquire the **admin** username, because is the super user of LimeSurvey
 - **SAML attributed used as email**: the attribute returned from the IdP that will be used as an email of the user on LimeSurvey
 - **SAML attributed used as name**: the attribute returned from the IdP that will be the users human friendly name
+- **Auto create users**: check if the user exists in the local database and if not the plugin creates the user from the SAML metadata
 - **Auto update users**: check if IdP has different attribute values for email and name and update them on LimeSurvey
 - **Force SAML login**: if this is set to true the plugin will force the login path to use only simpleSAMLphp
 - **Authtype base**: LimeSurvey internal configuration options, use it only if you know what you are doing. Configures where the users data are stored.
