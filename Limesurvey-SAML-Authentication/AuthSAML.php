@@ -58,6 +58,7 @@ class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
         
         $this->subscribe('getGlobalBasePermissions');
         $this->subscribe('beforeLogin');
+        $this->subscribe('beforeLogout');
         $this->subscribe('newUserSession');
     }
     
@@ -84,16 +85,24 @@ class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
     
     public function beforeLogin() {
 	    
-	    $ssp = $this->get_saml_instance();
+        $ssp = $this->get_saml_instance();
         $ssp->requireAuth();
         
         if ($ssp->isAuthenticated()) {
             $this->setAuthPlugin();
             $this->newUserSession();
         }
-	}
+    }
 	
-	public function newUserSession() {
+    public function beforeLogout() {
+        $ssp = $this->get_saml_instance();
+        
+        if ($ssp->isAuthenticated()) {
+            $ssp->logout();
+        }
+    }
+	
+    public function newUserSession() {
 		
         $ssp = $this->get_saml_instance();
         
