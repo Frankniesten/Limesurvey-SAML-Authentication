@@ -240,18 +240,27 @@ class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
     public function getUserName() {
 
         if ($this->_username == null) {
-            $ssp = $this->get_saml_instance();
-            $attributes = $this->ssp->getAttributes();
-            if (!empty($attributes)) {
-                $saml_uid_mapping = $this->get('saml_uid_mapping', null, null, 'uid');
-                if (array_key_exists($saml_uid_mapping , $attributes) && !empty($attributes[$saml_uid_mapping])) {
-                    $username = $attributes[$saml_uid_mapping][0];
-                    $this->setUsername($username);
-                }
+            $username = $this->getUserNameAttribute();
+            if ($username !== false) {
+                $this->setUsername($username);
             }
         }
 
         return $this->_username;
+    }
+
+    public function getUserNameAttribute()
+    {
+        $ssp = $this->get_saml_instance();
+        $attributes = $this->ssp->getAttributes();
+        if (!empty($attributes)) {
+            $saml_uid_mapping = $this->get('saml_uid_mapping', null, null, 'uid');
+            if (array_key_exists($saml_uid_mapping, $attributes) && !empty($attributes[$saml_uid_mapping])) {
+                $username = $attributes[$saml_uid_mapping][0];
+                return $username;
+            }
+        }
+        return false;
     }
 
     public function getUserCommonName() {
