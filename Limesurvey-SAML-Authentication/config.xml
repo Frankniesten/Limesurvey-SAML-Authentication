@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <metadata>
+        <name>AuthSAML</name>
+        <type>plugin</type>
+        <creationDate>2018-08-14</creationDate>
+        <lastUpdate>2019-08-07</lastUpdate>
+        <author>Frank Niesten</author>
+        <authorUrl>https://github.com/Frankniesten/Limesurvey-SAML-Authentication</authorUrl>
+        <version>1.0.0</version>
+        <license>GNU General Public License version 3</license>
+        <description><![CDATA[Core: SAML authentication]]></description>
+    </metadata>
+
+    <compatibility>
+        <version>4.0</version>
+    </compatibility>
+
+    <updaters disabled="disabled">
+    </updaters>
+</config>
