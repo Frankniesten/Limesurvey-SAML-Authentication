@@ -12,6 +12,8 @@
  * URL: https://github.com/Frankniesten/Limesurvey-SAML-Authentication
  */
 
+use SimpleSAML\Auth\Simple;
+
 class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
 {
     protected $storage = 'DbStorage';
@@ -20,6 +22,9 @@ class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
     static protected $description = 'Core: SAML authentication';
     static protected $name = 'SAML';
 
+    /**
+     * @var array
+     */
     protected $settings = array(
         'simplesamlphp_path' => array(
             'type' => 'string',
@@ -83,11 +88,14 @@ class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
         ),
     );
 
-    public function init() {
+    /**
+     * init
+     */
+    public function init()
+    {
         $this->storage = $this->get('storage_base', null, null, 'DbStorage');
 
         $this->subscribe('getGlobalBasePermissions');
-
         $this->subscribe('beforeLogin');
         $this->subscribe('newUserSession');
         $this->subscribe('afterLogout');
@@ -98,13 +106,13 @@ class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
     }
 
     /**
+     * getGlobalBasePermissions
+     *
      * Add AuthLDAP Permission to global Permission
      */
     public function getGlobalBasePermissions()
     {
         $this->getEvent()->append('globalBasePermissions', array(
-
-
             'auth_saml' => array(
                 'create' => false,
                 'update' => false,
@@ -118,43 +126,55 @@ class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
         ));
     }
 
-    public function beforeLogin() {
-        $ssp = $this->get_saml_instance();
-
+    /**
+     * beforeLogin
+     */
+    public function beforeLogin()
+    {
         if ($this->get('force_saml_login', null, null, false)) {
-            $ssp->requireAuth();
+            $this->getSAMLInstance()->requireAuth();
         }
 
-        if ($ssp->isAuthenticated()) {
+        if ($this->getSAMLInstance()->isAuthenticated()) {
             $this->setAuthPlugin();
             $this->newUserSession();
         }
     }
 
+    /**
+     * afterLogout
+     */
     public function afterLogout()
     {
-        $ssp = $this->get_saml_instance();
         $redirect = $this->get('logout_redirect', null, null, '/admin');
-        if ($ssp->isAuthenticated()) {
-            Yii::app()->controller->redirect($ssp->getLogoutUrl($redirect));
+
+        if ($this->getSAMLInstance()->isAuthenticated()) {
+            Yii::app()->controller->redirect($this->getSAMLInstance()->getLogoutUrl($redirect));
             Yii::app()->end();
         }
     }
 
+    /**
+     * newLoginForm
+     */
     public function newLoginForm()
     {
-        $authtype_base = $this->get('authtype_base', null, null, 'Authdb');
+        $authTypeBase = $this->get('authtype_base', null, null, 'Authdb');
 
-        $ssp = $this->get_saml_instance();
-        $this->getEvent()->getContent($authtype_base)->addContent('<li><center>Click on that button to initiate SAML Login<br><a href="'.$ssp->getLoginURL().'" title="SAML Login"><img src="'.Yii::app()->getConfig('imageurl').'/saml_logo.gif"></a></center><br></li>', 'prepend');
+        $loginFormContent = '<div style="text-align:center; padding-bottom: 10px; margin-bottom: 10px; border-bottom: dashed 1px #000;">Click on that button to initiate SAML Login<br><a href="'.$this->getSAMLInstance()->getLoginURL().'" title="SAML Login"><img height="60" src="'.Yii::app()->getConfig('imageurl').'/saml_logo.png"></a></><br></div>';
+
+        $this
+            ->getEvent()
+            ->getContent($authTypeBase)
+            ->addContent($loginFormContent, 'prepend');
     }
 
-    public function newUserSession() {
-
-        $ssp = $this->get_saml_instance();
-
-        if ($ssp->isAuthenticated()) {
-
+    /**
+     * newUserSession
+     */
+    public function newUserSession()
+    {
+        if ($this->getSAMLInstance()->isAuthenticated()) {
             $sUser = $this->getUserName();
             $name = $this->getUserCommonName();
             $mail = $this->getUserMail();
@@ -189,12 +209,18 @@ class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
             } elseif (is_null($oUser)) {
                 throw new CHttpException(401, gT("We are sorry but you do not have an account."));
             } else {
-
                 // *** Update user ***
                 $auto_update_users = $this->get('auto_update_users', null, null, true);
 
                 if ($auto_update_users) {
+                    /**
+                     * Added 'users_name' => $sUser
+                     * to prevent getting stuck in redirect loop when
+                     * there is a difference in case between existing username
+                     * and the username coming from SAML
+                     */
                     $changes = array (
+                        'users_name' => $sUser,
                         'full_name' => $name,
                         'email' => $mail,
                     );
@@ -207,6 +233,7 @@ class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
             }
         }
         $flag = $this->get('simplesamlphp_cookie_session_storage', null, null, true);
+
         if ($flag){
             $session = SimpleSAML_Session::getSessionFromRequest();
             $session->cleanup();
@@ -214,33 +241,35 @@ class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
     }
 
     /**
+     * getSAMLInstance
+     *
      * Initialize SAML authentication
-     * @return void
+     * @return Simple
      */
-    public function get_saml_instance() {
-
+    public function getSAMLInstance()
+    {
         if ($this->ssp == null) {
+            $simpleSAMLPath = $this->get('simplesamlphp_path', null, null, '/var/www/simplesamlphp');
+            require_once($simpleSAMLPath.'/lib/_autoload.php');
 
-            $simplesamlphp_path = $this->get('simplesamlphp_path', null, null, '/var/www/simplesamlphp');
-
-            require_once($simplesamlphp_path.'/lib/_autoload.php');
-
-            $saml_authsource = $this->get('saml_authsource', null, null, 'limesurvey');
-
-            $this->ssp = new \SimpleSAML\Auth\Simple($saml_authsource);
+            $samlAuthSource = $this->get('saml_authsource', null, null, 'limesurvey');
+            $this->ssp = new Simple($samlAuthSource);
         }
 
         return $this->ssp;
     }
 
     /**
+     * getUserName
+     *
      * Get Userdata from SAML Attributes
      * @return void
      */
-    public function getUserName() {
-
+    public function getUserName()
+    {
         if ($this->_username == null) {
             $username = $this->getUserNameAttribute();
+
             if ($username !== false) {
                 $this->setUsername($username);
             }
@@ -249,27 +278,39 @@ class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
         return $this->_username;
     }
 
+    /**
+     * getUserNameAttribute
+     *
+     * @return false
+     */
     public function getUserNameAttribute()
     {
-        $ssp = $this->get_saml_instance();
-        $attributes = $this->ssp->getAttributes();
+        $attributes = $this->getSAMLInstance()->getAttributes();
+
         if (!empty($attributes)) {
             $saml_uid_mapping = $this->get('saml_uid_mapping', null, null, 'uid');
+
             if (array_key_exists($saml_uid_mapping, $attributes) && !empty($attributes[$saml_uid_mapping])) {
-                $username = $attributes[$saml_uid_mapping][0];
-                return $username;
+                return $attributes[$saml_uid_mapping][0];
             }
         }
+
         return false;
     }
 
-    public function getUserCommonName() {
-
+    /**
+     * getUserCommonName
+     *
+     * @return string
+     */
+    public function getUserCommonName()
+    {
         $name = '';
-        $ssp = $this->get_saml_instance();
-        $attributes = $this->ssp->getAttributes();
+        $attributes = $this->getSAMLInstance()->getAttributes();
+
         if (!empty($attributes)) {
             $saml_name_mapping = $this->get('saml_name_mapping', null, null, 'cn');
+
             if (array_key_exists($saml_name_mapping , $attributes) && !empty($attributes[$saml_name_mapping])) {
                 $name = $attributes[$saml_name_mapping][0];
             }
@@ -278,13 +319,19 @@ class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
         return $name;
     }
 
-    public function getUserMail() {
-
+    /**
+     * getUserMail
+     *
+     * @return string
+     */
+    public function getUserMail()
+    {
         $mail = '';
-        $ssp = $this->get_saml_instance();
-        $attributes = $this->ssp->getAttributes();
+        $attributes = $this->getSAMLInstance()->getAttributes();
+
         if (!empty($attributes)) {
             $saml_mail_mapping = $this->get('saml_mail_mapping', null, null, 'mail');
+
             if (array_key_exists($saml_mail_mapping , $attributes) && !empty($attributes[$saml_mail_mapping])) {
                 $mail = $attributes[$saml_mail_mapping][0];
             }
