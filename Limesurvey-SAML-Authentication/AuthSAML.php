@@ -197,6 +197,7 @@ class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
                     $permission = new Permission;
 
                     Permission::model()->setGlobalPermission($oUser->uid, 'auth_saml');
+                    Permission::model()->setGlobalPermission($oUser->uid, 'surveys', ['create']);
 
                     $oUser = $this->api->getUserByName($sUser);
 
