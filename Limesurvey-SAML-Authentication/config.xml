@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <metadata>
+        <name>AuthSAML</name>
+        <type>plugin</type>
+        <creationDate>2022-01-10</creationDate>
+        <lastUpdate>2022-05-13</lastUpdate>
+        <author>Gerbrand Sterrenburg</author>
+        <authorUrl>https://github.com/UtrechtUniversity/Limesurvey-SAML-Authentication</authorUrl>
+        <version>1.0.0</version>
+        <license>GNU General Public License version 3</license>
+        <description><![CDATA[Core: SAML authentication]]></description>
+    </metadata>
+
+    <compatibility>
+        <version>5.3</version>
+    </compatibility>
+
+    <updaters disabled="disabled">
+    </updaters>
+</config>
