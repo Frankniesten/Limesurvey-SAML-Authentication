@@ -13,7 +13,9 @@
     </metadata>
 
     <compatibility>
+        <version>6.1</version>
         <version>6.0</version>
+        <version>5.3</version>
     </compatibility>
 
     <updaters disabled="disabled">
