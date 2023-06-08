@@ -206,6 +206,8 @@ class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
                     $this->setAuthSuccess($oUser);
                 } else {
                     $this->setAuthFailure(self::ERROR_USERNAME_INVALID);
+                    // Error must be thrown, as user could not be created!
+                    throw new CHttpException(500, gT("We are sorry but we could not create an account."));
                 }
             } elseif (is_null($oUser)) {
                 throw new CHttpException(401, gT("We are sorry but you do not have an account."));
@@ -236,7 +238,7 @@ class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
         $flag = $this->get('simplesamlphp_cookie_session_storage', null, null, true);
 
         if ($flag){
-            $session = SimpleSAML_Session::getSessionFromRequest();
+            $session = SimpleSAML\Session::getSessionFromRequest();
             $session->cleanup();
         }
     }
