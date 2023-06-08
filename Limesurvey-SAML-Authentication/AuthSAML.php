@@ -2,7 +2,7 @@
 
 /*
  * LimeSurvey Auhtnetication Plugin for Limesurvey 3.14+
- * Auhtor: Frank Niesten
+ * Author: Frank Niesten
  * License: GNU General Public License v3.0
  *
  * This plugin is based on the following LimeSurvey Plugins:
@@ -97,6 +97,7 @@ class AuthSAML extends LimeSurvey\PluginManager\AuthPluginBase
 
         $this->subscribe('getGlobalBasePermissions');
         $this->subscribe('beforeLogin');
+        $this->subscribe('beforeLogout');
         $this->subscribe('newUserSession');
         $this->subscribe('afterLogout');
 
