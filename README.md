@@ -2,8 +2,8 @@
 LimeSurvey authentication plugin for authenticating users against an SAML Identity Provider. Forked to handle PHP session conflicts and add more configuration options.
 
 ## Requirements
-- LimeSurvey 3.XX
-- simpleSAMLphp
+- LimeSurvey 6
+- simpleSAMLphp (> 2.0)
 
 ## Installation instructions
 - Create folder **AuthSAML** inside **limesurvey/plugins** folder
@@ -11,7 +11,7 @@ LimeSurvey authentication plugin for authenticating users against an SAML Identi
 - Paste it inside **limesurvey/plugins/AuthSAML** folder
 - Configure the plugin from the **Plugin Manager**
 - Go to **Admin > Configuration > Plugin Manager** or **https:/example.com/index.php/admin/pluginmanager/sa/index** and **Enable** the plugin
-- Place your own custom **saml_logo.png** image at **imesurvey/assets/images**. It will be displayed as the login button
+- Place your own custom **saml_logo.png** image at **limesurvey/assets/images**. It will be displayed as the login button
 
 ## Configuration options
 - **Path to the SimpleSAMLphp folder**: path to the simpleSAMLphp installation
@@ -45,3 +45,4 @@ Plugin settings at plugin manager
 - [How to setup a simpleSAMLphp Service Provider](https://simplesamlphp.org/docs/stable/simplesamlphp-sp)
 - [LimeSurvey](https://www.limesurvey.org/)
 - [How to install LimeSurvey](https://manual.limesurvey.org/Installation_-_LimeSurvey_CE)
+- [How to configure Google Workspace IDP for simpleSAMLphp](https://forwardforce.io/configure-google-workspace-as-identity-provider-for-simplesamlphp/)
